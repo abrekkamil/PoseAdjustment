@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--人体跟踪-->
+<launch>
+   <!-- <include file="$(find jetauto_peripherals)/launch/depth_cam.launch"/>-->
+
+    <rosparam file="$(find jetauto_example)/config/yolov5_bridge.yaml"   command="load"/>
+    <arg name="node_name" default="yolov5" />
+    <rosparam param="/$(arg node_name)/classes">['crack']</rosparam>
+
+
+    <node pkg="jetauto_example" type="yolov5_node.py" name="$(arg node_name)" output="screen">
+        <param name="use_depth_cam" value="true"/>
+        <param name="engine"        value="yolov5n_merged_crack.engine"/>
+        <param name="lib"           value="libmyplugins_640.so"/>
+        <param name="conf_thresh"   value="0.3"/>
+    </node>
+
+
+    <node pkg="jetauto_example" type="path_publisher.py" name="path_publisher_node" output="screen">
+        <param name="map_topic" value="/map"/> 
+        <param name="resolution" value="0.05"/> 
+    </node>
+
+    <!-- Arguments -->
+    <arg name="sim"         default="false"/>
+    <arg name="app"         default="false"/>
+    <arg name="use_joy"     default="false"/>
+    <arg name="use_depth_camera"    default="false"/>
+    <arg name="robot_name"  default="/"/>
+    <arg name="master_name" default="/"/>
+    <arg name="slam_methods" default="gmapping" doc="slam type
+        [gmapping, cartographer, hector, karto, frontier, explore, rrt_exploration, rtabmap]"/>
+
+    <!--topic和frame设置(topic and frame setting)-->
+    <arg     if="$(eval robot_name == '/')" name="topic_prefix" default=""/>
+    <arg unless="$(eval robot_name == '/')" name="topic_prefix" default="/$(arg robot_name)"/>
+    <arg     if="$(eval robot_name == '/')" name="frame_prefix" default=""/>
+    <arg unless="$(eval robot_name == '/')" name="frame_prefix" default="$(arg robot_name)/"/>
+    <arg name="map_frame"           default="$(arg frame_prefix)map"/>
+    <arg name="odom_frame"          default="$(arg frame_prefix)odom"/>
+    <arg name="base_frame"          default="$(arg frame_prefix)base_footprint"/>
+    <arg name="scan_topic"              default="$(arg topic_prefix)/scan"/>
+
+    <include file="$(find jetauto_slam)/launch/include/jetauto_robot.launch">
+        <arg name="sim"         value="$(arg sim)"/>
+        <arg name="app"         value="$(arg app)"/>
+        <arg name="use_joy"     value="$(arg use_joy)"/>
+        <arg name="robot_name"  value="$(arg robot_name)"/>
+        <arg name="master_name" value="$(arg master_name)"/>
+    </include>
+
+    <include file="$(find jetauto_slam)/launch/include/slam_base.launch">
+        <arg name="sim"             value="$(arg sim)"/>
+        <arg name="slam_methods"    value="$(arg slam_methods)"/>
+        <arg name="robot_name" value="$(arg robot_name)"/>
+
+    </include>
+
+    <!-- RVIZ -->
+    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find jetauto_slam)/rviz/$(arg slam_methods)_pose.rviz"/>
+</launch>

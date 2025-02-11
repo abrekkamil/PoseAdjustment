@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Include existing components -->
+    <!--<include file="$(find jetauto_controller)/launch/jetauto_controller.launch"/>-->
+    <!--<include file="$(find jetauto_example)/scripts/body_control/pose_adjustment_base.launch"/>-->
+    <include file="$(find jetauto_example)/scripts/body_control/pose_adjustment_base_map.launch"/>
+    <!--<include file="$(find jetauto_peripherals)/launch/lidar.launch"/> -->
+
+
+    <!-- Pose Adjustment Node -->
+    <node pkg="jetauto_example" type="pose_adjustment.py" name="pose_adjustment" output="screen"/>
+
+</launch>
+
